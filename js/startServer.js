@@ -61,47 +61,52 @@ function startServer(configFile) {
         // return input control from any prompt to the console
         readlineUi.close();
         // start the server
-        const server = yield maceta_api_1.createServer(projectConfig);
-        if (configFile.has("resourcePath")) {
-            const fileResources = configFile.get("resourcePath");
-            Object.keys(fileResources).forEach(key => server.createResourcePath({
-                namespace: key,
-                path: fileResources[key]
-            }));
-        }
-        if ("shell" in macetaConfiguration) {
-            if ("languages" in macetaConfiguration.shell) {
-                server.setShellLanguages(macetaConfiguration.shell.languages);
+        try {
+            const server = yield maceta_api_1.createServer(projectConfig);
+            if (configFile.has("resourcePath")) {
+                const fileResources = configFile.get("resourcePath");
+                Object.keys(fileResources).forEach(key => server.createResourcePath({
+                    namespace: key,
+                    path: fileResources[key]
+                }));
             }
-            if ("configurations" in macetaConfiguration.shell) {
-                const configs = macetaConfiguration.shell.configurations;
-                Object.keys(configs).forEach(key => {
-                    if (key !== "default") {
-                        server.createShellConfigurationKey(key);
-                    }
-                    if ("resourcePath" in configs[key]) {
-                        let rsPath = configs[key].resourcePath;
-                        Object.keys(rsPath).forEach(namespace => server.createResourcePath({
-                            namespace,
-                            path: rsPath[namespace],
-                            shellConfigurationKey: key,
-                            sapServer: true
-                        }));
-                    }
-                });
+            if ("shell" in macetaConfiguration) {
+                if ("languages" in macetaConfiguration.shell) {
+                    server.setShellLanguages(macetaConfiguration.shell.languages);
+                }
+                if ("configurations" in macetaConfiguration.shell) {
+                    const configs = macetaConfiguration.shell.configurations;
+                    Object.keys(configs).forEach(key => {
+                        if (key !== "default") {
+                            server.createShellConfigurationKey(key);
+                        }
+                        if ("resourcePath" in configs[key]) {
+                            let rsPath = configs[key].resourcePath;
+                            Object.keys(rsPath).forEach(namespace => server.createResourcePath({
+                                namespace,
+                                path: rsPath[namespace],
+                                shellConfigurationKey: key,
+                                sapServer: true
+                            }));
+                        }
+                    });
+                }
+                if (shellId != undefined) {
+                    server.setShellConfigurationKey(shellId);
+                }
             }
-            if (shellId != undefined) {
-                server.setShellConfigurationKey(shellId);
+            const url = yield server.start();
+            if ("shell" in macetaConfiguration) {
+                consoleOutput_1.logSuccess(`Shell embedded mode started: ${url}\n`);
             }
+            else {
+                consoleOutput_1.logSuccess(`Server running at: ${url}\n`);
+            }
+            opn(url);
         }
-        const url = yield server.start();
-        if ("shell" in macetaConfiguration) {
-            consoleOutput_1.logSuccess(`Shell embedded mode started: ${url}\n`);
+        catch (e) {
+            consoleOutput_1.logError(e);
         }
-        else {
-            consoleOutput_1.logSuccess(`Server running at: ${url}\n`);
-        }
-        opn(url);
     });
 }
 exports.startServer = startServer;

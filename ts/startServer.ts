@@ -57,52 +57,56 @@ export async function startServer(configFile) {
   readlineUi.close();
 
   // start the server
-  const server = await createServer(projectConfig);
-  if (configFile.has("resourcePath")) {
-    const fileResources = configFile.get("resourcePath");
-    Object.keys(fileResources).forEach(key =>
-      server.createResourcePath({
-        namespace: key,
-        path: fileResources[key]
-      })
-    );
-  }
-  if ("shell" in macetaConfiguration) {
-    if ("languages" in macetaConfiguration.shell) {
-      server.setShellLanguages(macetaConfiguration.shell.languages);
+  try {
+    const server = await createServer(projectConfig);
+    if (configFile.has("resourcePath")) {
+      const fileResources = configFile.get("resourcePath");
+      Object.keys(fileResources).forEach(key =>
+        server.createResourcePath({
+          namespace: key,
+          path: fileResources[key]
+        })
+      );
     }
-    if ("configurations" in macetaConfiguration.shell) {
-      const configs = macetaConfiguration.shell.configurations;
-      Object.keys(configs).forEach(key => {
-        if (key !== "default") {
-          server.createShellConfigurationKey(key);
-        }
-        if ("resourcePath" in configs[key]) {
-          let rsPath = configs[key].resourcePath;
-          Object.keys(rsPath).forEach(namespace =>
-            server.createResourcePath({
-              namespace,
-              path: rsPath[namespace],
-              shellConfigurationKey: key,
-              sapServer: true
-            })
-          );
-        }
-      });
+    if ("shell" in macetaConfiguration) {
+      if ("languages" in macetaConfiguration.shell) {
+        server.setShellLanguages(macetaConfiguration.shell.languages);
+      }
+      if ("configurations" in macetaConfiguration.shell) {
+        const configs = macetaConfiguration.shell.configurations;
+        Object.keys(configs).forEach(key => {
+          if (key !== "default") {
+            server.createShellConfigurationKey(key);
+          }
+          if ("resourcePath" in configs[key]) {
+            let rsPath = configs[key].resourcePath;
+            Object.keys(rsPath).forEach(namespace =>
+              server.createResourcePath({
+                namespace,
+                path: rsPath[namespace],
+                shellConfigurationKey: key,
+                sapServer: true
+              })
+            );
+          }
+        });
+      }
+      if (shellId != undefined) {
+        server.setShellConfigurationKey(shellId);
+      }
     }
-    if (shellId != undefined) {
-      server.setShellConfigurationKey(shellId);
-    }
-  }
 
-  const url = await server.start();
+    const url = await server.start();
 
-  if ("shell" in macetaConfiguration) {
-    logSuccess(`Shell embedded mode started: ${url}\n`);
-  } else {
-    logSuccess(`Server running at: ${url}\n`);
+    if ("shell" in macetaConfiguration) {
+      logSuccess(`Shell embedded mode started: ${url}\n`);
+    } else {
+      logSuccess(`Server running at: ${url}\n`);
+    }
+    opn(url);
+  } catch (e) {
+    logError(e);
   }
-  opn(url);
 }
 
 // look for index.html and shellConfig.json in the application directory.
