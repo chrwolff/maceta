@@ -15,9 +15,11 @@ const PromptRadio = require("prompt-radio");
 const ConfirmPrompt = require("prompt-confirm");
 const readlineUi = require("readline-ui").create();
 const path = require("path");
+process.env["NODE_CONFIG_DIR"] = path.join(__dirname, "..", "config");
+const configFile = require("config");
 const consoleOutput_1 = require("./consoleOutput");
 const maceta_api_1 = require("maceta-api");
-function startServer(configFile) {
+function startServer(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const basePath = process.cwd();
         consoleOutput_1.logSuccess(`Using ${basePath} as application path`);
@@ -33,6 +35,7 @@ function startServer(configFile) {
             hostname: configFile.get("hostname"),
             port: configFile.get("port")
         };
+        Object.keys(options).forEach(key => (projectConfig[key] = options[key]));
         const macetaConfiguration = yield getMacetaConfig(basePath);
         if ("ui5LibraryPath" in macetaConfiguration) {
             projectConfig.localLibraryPath = macetaConfiguration.ui5LibraryPath;

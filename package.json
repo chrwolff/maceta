@@ -2,17 +2,16 @@
   "name": "maceta",
   "preferGlobal": true,
   "bin": "js/main.js",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "author": "Christian Wolff",
   "license": "MIT",
   "scripts": {
-    "compile": "tsc"
   },
   "dependencies": {
     "config": "^1.30.0",
     "directory-tree": "^2.1.0",
     "fs-extra": "^6.0.1",
-    "maceta-api": "git+ssh://git@github.com:levkazar/maceta-api.git",
+    "maceta-api": "git+ssh://git@github.com:levkazar/maceta-api.git#enhancements",
     "minimist": "^1.2.0",
     "opn": "^5.3.0",
     "path": "^0.12.7",
@@ -23,6 +22,7 @@
   },
   "devDependencies": {
     "@types/config": "^0.0.34",
+    "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.5.2",
     "@types/yargs": "^11.1.0"
   }

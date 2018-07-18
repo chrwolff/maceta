@@ -10,7 +10,7 @@
       "name": "Programm starten",
       "program": "${workspaceFolder}/js\\main.js",
       "args": [
-        "--ui5Lib=\"abc\""
+        "run"
       ]
     }
   ]

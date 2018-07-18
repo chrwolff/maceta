@@ -6,10 +6,13 @@ const ConfirmPrompt = require("prompt-confirm");
 const readlineUi = require("readline-ui").create();
 const path = require("path");
 
+process.env["NODE_CONFIG_DIR"] = path.join(__dirname, "..", "config");
+const configFile = require("config");
+
 import { logSuccess, logError, logNewline, logWarning } from "./consoleOutput";
 import { ServerParameters, createServer } from "maceta-api";
 
-export async function startServer(configFile) {
+export async function startServer(options) {
   const basePath = process.cwd();
   logSuccess(`Using ${basePath} as application path`);
   // create a basic config for the project. assume the current working dir
@@ -24,6 +27,8 @@ export async function startServer(configFile) {
     hostname: configFile.get("hostname"),
     port: configFile.get("port")
   };
+
+  Object.keys(options).forEach(key => (projectConfig[key] = options[key]));
 
   const macetaConfiguration: any = await getMacetaConfig(basePath);
   if ("ui5LibraryPath" in macetaConfiguration) {
