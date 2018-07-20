@@ -3,7 +3,7 @@
   "description": "A testbed for SAP UI5 applications",
   "preferGlobal": true,
   "bin": "js/main.js",
-  "version": "0.0.3",
+  "version": "0.5.0",
   "author": {
     "name": "Christian Wolff",
     "email": "chrwolff@gmx.net"
@@ -15,6 +15,14 @@
     "SAP",
     "Fiori"
   ],
+  "homepage": "https://github.com/chrwolff/maceta/#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrwolff/maceta"
+  },
+  "bugs": {
+    "url": "https://github.com/chrwolff/maceta/issues"
+  },
   "scripts": {},
   "dependencies": {
     "config": "^1.30.0",
