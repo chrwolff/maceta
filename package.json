@@ -1,10 +1,20 @@
 {
   "name": "maceta",
+  "description": "A testbed for SAP UI5 applications",
   "preferGlobal": true,
   "bin": "js/main.js",
-  "version": "0.0.2",
-  "author": "Christian Wolff",
+  "version": "0.0.3",
+  "author": {
+    "name": "Christian Wolff",
+    "email": "chrwolff@gmx.net"
+  },
   "license": "MIT",
+  "keywords": [
+    "UI5",
+    "OpenUI5",
+    "SAP",
+    "Fiori"
+  ],
   "scripts": {},
   "dependencies": {
     "config": "^1.30.0",
@@ -14,7 +24,9 @@
     "minimist": "^1.2.0",
     "opn": "^5.3.0",
     "path": "^0.12.7",
+    "prompt-base": "^5.0.0",
     "prompt-confirm": "^2.0.4",
+    "prompt-question": "^5.0.2",
     "prompt-radio": "^1.2.1",
     "readline-ui": "^2.2.3",
     "yargs": "^12.0.1"
