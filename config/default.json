@@ -1,5 +1,4 @@
 {
   "hostname": "localhost",
-  "port": 3000,
-  "ui5LibraryPath": "C:/workspace/ui5-lib"
+  "port": 3000
 }

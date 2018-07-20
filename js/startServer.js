@@ -15,14 +15,14 @@ const PromptRadio = require("prompt-radio");
 const ConfirmPrompt = require("prompt-confirm");
 const readlineUi = require("readline-ui").create();
 const path = require("path");
+process.env["NODE_CONFIG_DIR"] = path.join(__dirname, "..", "config");
+const configFile = require("config");
 const consoleOutput_1 = require("./consoleOutput");
 const maceta_api_1 = require("maceta-api");
-function startServer(configFile) {
+function startServer(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const basePath = process.cwd();
         consoleOutput_1.logSuccess(`Using ${basePath} as application path`);
-        // create a basic config for the project. assume the current working dir
-        // as application directory.
         let projectConfig = {
             componentPath: null,
             oDataPath: configFile.has("oDataPath") ? configFile.get("oDataPath") : null,
@@ -33,6 +33,7 @@ function startServer(configFile) {
             hostname: configFile.get("hostname"),
             port: configFile.get("port")
         };
+        Object.keys(options).forEach(key => (projectConfig[key] = options[key]));
         const macetaConfiguration = yield getMacetaConfig(basePath);
         if ("ui5LibraryPath" in macetaConfiguration) {
             projectConfig.localLibraryPath = macetaConfiguration.ui5LibraryPath;
@@ -40,6 +41,24 @@ function startServer(configFile) {
         if (projectConfig.localLibraryPath == undefined) {
             consoleOutput_1.logError("No UI5 library path is configured!");
         }
+        let shellId = null;
+        let indexHtmlPath;
+        if ("shell" in macetaConfiguration) {
+            shellId = yield getShellId(macetaConfiguration.shell);
+            projectConfig.shellConfiguration = true;
+        }
+        else {
+            indexHtmlPath = yield getIndexHtmlPath(basePath);
+            if (indexHtmlPath === null) {
+                consoleOutput_1.logWarning("No index.html found");
+                consoleOutput_1.logSuccess("Using default shell configuration");
+                projectConfig.shellConfiguration = true;
+            }
+            else {
+                projectConfig.basePath = indexHtmlPath;
+            }
+        }
+        projectConfig.componentPath = yield getManifestDir(basePath);
         if ("oDataPath" in macetaConfiguration) {
             projectConfig.oDataPath = macetaConfiguration.oDataPath;
         }
@@ -49,57 +68,47 @@ function startServer(configFile) {
                 projectConfig.oDataPath = oDataPath;
             }
         }
-        projectConfig.componentPath = yield getManifestDir(basePath);
-        let shellId = null;
-        if ("shell" in macetaConfiguration) {
-            shellId = yield getShellId(macetaConfiguration.shell);
-            projectConfig.shellConfiguration = true;
-        }
-        else {
-            projectConfig.shellConfiguration = yield createShellConfigPrompt();
-        }
         // return input control from any prompt to the console
         readlineUi.close();
         // start the server
         try {
             const server = yield maceta_api_1.createServer(projectConfig);
-            if (configFile.has("resourcePath")) {
-                const fileResources = configFile.get("resourcePath");
+            if (configFile.has("resourceMap")) {
+                const fileResources = configFile.get("resourceMap");
                 Object.keys(fileResources).forEach(key => server.createResourcePath({
                     namespace: key,
                     path: fileResources[key]
                 }));
             }
             if ("shell" in macetaConfiguration) {
-                if ("languages" in macetaConfiguration.shell) {
-                    server.setShellLanguages(macetaConfiguration.shell.languages);
-                }
-                if ("configurations" in macetaConfiguration.shell) {
-                    const configs = macetaConfiguration.shell.configurations;
-                    Object.keys(configs).forEach(key => {
-                        if (key !== "default") {
-                            server.createShellConfigurationKey(key);
-                        }
-                        if ("resourcePath" in configs[key]) {
-                            let rsPath = configs[key].resourcePath;
-                            Object.keys(rsPath).forEach(namespace => server.createResourcePath({
-                                namespace,
-                                path: rsPath[namespace],
-                                shellConfigurationKey: key,
-                                sapServer: true
-                            }));
-                        }
-                    });
-                }
+                const configs = macetaConfiguration.shell;
+                Object.keys(configs).forEach(key => {
+                    if (key !== "default") {
+                        server.createShellConfigurationKey(key);
+                    }
+                    if ("languages" in configs[key]) {
+                        server.setShellLanguages(configs[key].languages);
+                    }
+                    if ("resourceMap" in configs[key]) {
+                        let rsPath = configs[key].resourcePath;
+                        Object.keys(rsPath).forEach(namespace => server.createResourcePath({
+                            namespace,
+                            path: rsPath[namespace]
+                            //shellConfigurationKey: key,
+                            //sapServer: true
+                        }));
+                    }
+                });
                 if (shellId != undefined) {
                     server.setShellConfigurationKey(shellId);
                 }
             }
-            const url = yield server.start();
+            let url = yield server.start();
             if ("shell" in macetaConfiguration) {
                 consoleOutput_1.logSuccess(`Shell embedded mode started: ${url}\n`);
             }
             else {
+                url = `${url}index.html`;
                 consoleOutput_1.logSuccess(`Server running at: ${url}\n`);
             }
             opn(url);
@@ -110,8 +119,6 @@ function startServer(configFile) {
     });
 }
 exports.startServer = startServer;
-// look for index.html and shellConfig.json in the application directory.
-// if both are found, then prompt for a choice.
 function getMacetaConfig(applicationDir) {
     return __awaiter(this, void 0, void 0, function* () {
         let directories = directoryTree(applicationDir, {
@@ -188,7 +195,7 @@ function createShellConfigPrompt() {
                 resolve(selected);
             }
             else {
-                reject("No mode selected!");
+                reject("Nothing selected!");
             }
         });
     });
@@ -197,28 +204,22 @@ function createShellConfigPrompt() {
 // then prompt for a choice.
 function getShellId(shellConfig) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            if ("configurations" in shellConfig &&
-                "default" in shellConfig.configurations) {
-                let configKeys = Object.keys(shellConfig.configurations);
-                if (configKeys.length === 1) {
-                    return configKeys[0];
-                }
-                else {
-                    try {
-                        return yield shellConfigIdPrompt(configKeys);
-                    }
-                    catch (error) {
-                        consoleOutput_1.logError(error);
-                    }
-                }
+        if ("default" in shellConfig) {
+            let configKeys = Object.keys(shellConfig);
+            if (configKeys.length === 1) {
+                return configKeys[0];
             }
             else {
-                consoleOutput_1.logError("shellConfig.json contains no default configuration!");
+                try {
+                    return yield shellConfigIdPrompt(configKeys);
+                }
+                catch (error) {
+                    consoleOutput_1.logError(error);
+                }
             }
         }
-        catch (error) {
-            consoleOutput_1.logError("shellConfig.json not found!");
+        else {
+            consoleOutput_1.logError("shell configuration contains no 'default' key!");
         }
     });
 }
@@ -226,7 +227,7 @@ function shellConfigIdPrompt(configKeys) {
     consoleOutput_1.logNewline();
     let prompt = new PromptRadio({
         name: "shellConfiguration",
-        message: "Select a shell configuration\n(Select with the spacebar, continue with enter)",
+        message: "Select a shell configuration key\n(Select with the spacebar, continue with enter)",
         default: "default",
         choices: configKeys,
         ui: readlineUi
@@ -273,7 +274,7 @@ function getManifestDirectoryChoice(directories) {
         throw new Error("No manifest.json found!");
     }
     else if (directories.length === 1) {
-        consoleOutput_1.logSuccess(`Using manifest from ${directories[0]}`);
+        consoleOutput_1.logSuccess(`Manifest folder found: ${directories[0]}`);
         return directories[0];
     }
     else {
@@ -301,12 +302,64 @@ function getOdataDir(applicationDir) {
         const oDataPath = path.join(applicationDir, "odata");
         const exists = yield fileSystem.pathExists(oDataPath);
         if (exists) {
-            consoleOutput_1.logSuccess(`Using OData folder ${oDataPath}`);
+            consoleOutput_1.logSuccess(`OData folder found: ${oDataPath}`);
             return oDataPath;
         }
         else {
             return null;
         }
     });
+}
+function getIndexHtmlPath(applicationDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let directories = directoryTree(applicationDir, {
+            extensions: /\.html/,
+            exclude: /node_modules/
+        });
+        let foundDirectories = [];
+        search(directories);
+        function search(dirObject) {
+            if ("children" in dirObject) {
+                if (dirObject.children.reduce((found, entry) => found || entry.name === "index.html", false)) {
+                    foundDirectories.push(dirObject.path);
+                }
+                dirObject.children.forEach(entry => search(entry));
+            }
+        }
+        try {
+            return yield getIndexHtmlDirectoryChoice(foundDirectories);
+        }
+        catch (error) {
+            consoleOutput_1.logError(`${error}`);
+        }
+    });
+}
+function getIndexHtmlDirectoryChoice(directories) {
+    if (directories.length === 0) {
+        return null;
+    }
+    else if (directories.length === 1) {
+        consoleOutput_1.logSuccess(`index.html found in: ${directories[0]}`);
+        return directories[0];
+    }
+    else {
+        consoleOutput_1.logNewline();
+        let prompt = new PromptRadio({
+            name: "indexDir",
+            message: "Select the index.html directory\n(Select with the spacebar, continue with enter)",
+            choices: directories,
+            ui: readlineUi
+        });
+        return new Promise((resolve, reject) => {
+            prompt.ask(selected => {
+                if (selected) {
+                    resolve(selected);
+                }
+                else {
+                    reject("No directory selected!");
+                }
+            });
+        });
+    }
 }
 //# sourceMappingURL=startServer.js.map

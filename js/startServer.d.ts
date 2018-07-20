@@ -1,1 +1,1 @@
-export declare function startServer(configFile: any): Promise<void>;
+export declare function startServer(options: any): Promise<void>;
