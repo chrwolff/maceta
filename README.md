@@ -11,21 +11,19 @@ Reasons to use maceta:
 ## What you can expect
 Enter ``maceta s`` in your UI5 application folder and maceta will figure out how to setup a local server:
 
-<div style="background-color:black;padding:10px">
-PS C:\workspace\macetaTestApp> <font color="orange">maceta </font>s
-<br><br>
-<font color="lightgreen">
+```shell
+PS C:\workspace\macetaTestApp> maceta s
+
 Using C:\workspace\macetaTestApp as application path
-<br><br>
+
 Using maceta.config.json from C:\workspace\macetaTestApp
-<br><br>
+
 Manifest folder found: C:\workspace\macetaTestApp\app
-<br><br>
+
 OData folder found: C:\workspace\macetaTestApp\odata
-<br><br>
+
 Shell embedded mode started: http://localhost:3000/shell?sap-ushell-config=standalone&local-ushell-config=default&sap-language=en#Shell-runStandaloneApp
-</font>
-</div>
+```
 
 Your application will open in the default browser, either in shell embedded mode or by calling an ``index.html``.
 
