@@ -3,7 +3,7 @@
   "description": "A testbed for SAP UI5 applications",
   "preferGlobal": true,
   "bin": "js/main.js",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": {
     "name": "Christian Wolff",
     "email": "chrwolff@gmx.net"
