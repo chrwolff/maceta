@@ -39,8 +39,10 @@ function displayConfig() {
 }
 exports.displayConfig = displayConfig;
 function configToConsole(configuration) {
-    console.log("\nCurrent maceta configuration");
-    Object.keys(configuration).forEach(key => console.log(`${key}: ${configuration[key]}`));
+    console.log("\nCurrent global maceta configuration");
+    Object.keys(configuration)
+        .filter(key => key !== "resourceMap")
+        .forEach(key => console.log(`${key}: ${configuration[key]}`));
     console.log();
     process.exit();
 }

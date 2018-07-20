@@ -1335,9 +1335,9 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
-"maceta-api@git+ssh://git@github.com:levkazar/maceta-api.git#enhancements":
-  version "1.0.0"
-  resolved "git+ssh://git@github.com:levkazar/maceta-api.git#613e5ae64c2451eb7813659d5aa78b7225eb03f5"
+maceta-api@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/maceta-api/-/maceta-api-0.0.1.tgz#29763197545d083f9bfa8f6aff1ef6b8d2cdf811"
   dependencies:
     babel-core "^6.26.3"
     babel-plugin-transform-object-rest-spread "^6.26.0"
@@ -1372,15 +1372,15 @@ methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
 
-mime-db@~1.33.0:
-  version "1.33.0"
-  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.33.0.tgz#a3492050a5cb9b63450541e39d9788d2272783db"
+mime-db@~1.35.0:
+  version "1.35.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.35.0.tgz#0569d657466491283709663ad379a99b90d9ab47"
 
 mime-types@~2.1.18:
-  version "2.1.18"
-  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.18.tgz#6f323f60a83d11146f831ff11fd66e2fe5503bb8"
+  version "2.1.19"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.19.tgz#71e464537a7ef81c15f2db9d97e913fc0ff606f0"
   dependencies:
-    mime-db "~1.33.0"
+    mime-db "~1.35.0"
 
 mime@1.4.1:
   version "1.4.1"
@@ -1560,6 +1560,20 @@ prompt-base@^4.0.1, prompt-base@^4.0.2:
     readline-utils "^2.2.3"
     static-extend "^0.1.2"
 
+prompt-base@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/prompt-base/-/prompt-base-5.0.0.tgz#1f168dd94d0641aabb3411d4f12bbd6d12edeac1"
+  dependencies:
+    component-emitter "^1.2.1"
+    debug "^3.0.1"
+    koalas "^1.0.2"
+    log-utils "^0.2.1"
+    prompt-actions "^3.0.2"
+    prompt-question "^5.0.1"
+    readline-ui "^2.2.3"
+    readline-utils "^2.2.3"
+    static-extend "^0.1.2"
+
 prompt-checkbox@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/prompt-checkbox/-/prompt-checkbox-2.2.0.tgz#a1b086bac7e3422a3f1c34f66d6da52486472690"
@@ -1596,7 +1610,7 @@ prompt-confirm@^2.0.4:
     ansi-cyan "^0.1.1"
     prompt-base "^4.0.1"
 
-prompt-question@^5.0.1:
+prompt-question@^5.0.1, prompt-question@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/prompt-question/-/prompt-question-5.0.2.tgz#81a479f38f0bafecc758e5d6f7bc586e599610b3"
   dependencies:

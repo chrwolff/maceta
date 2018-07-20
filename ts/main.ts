@@ -2,33 +2,55 @@
 
 import { startServer } from "./startServer";
 import { saveConfig, displayConfig } from "./handleConfig";
+import { modifyResources, displayResources } from "./handleResources";
 
-const optionTemplate = {
+const startConfigOptionTemplate = {
   ui5LibraryPath: {
     alias: "ui5",
-    type: "string"
-  },
-  port: {
-    alias: "p",
-    type: "number"
+    type: "string",
+    desc: "Absolute path to UI5 library"
   },
   hostname: {
     alias: "h",
-    type: "string"
+    type: "string",
+    desc: "Hostname for the local server"
+  },
+  port: {
+    alias: "p",
+    type: "number",
+    desc: "Port for the application"
+  }
+};
+
+const resourceOptionTemplate = {
+  namespace: {
+    alias: "n",
+    type: "string",
+    desc: "Namespace that shall be configured"
+  },
+  delete: {
+    alias: "d",
+    type: "boolean",
+    desc: "Delete configuration of the given namespace"
   }
 };
 
 const args = require("yargs")
   .scriptName("maceta")
   .command(
-    ["run [option]", "r"],
+    ["start [option]", "s"],
     "Start maceta in current working directory",
-    optionTemplate
+    startConfigOptionTemplate
   )
   .command(
     ["config [option]", "c"],
     "Set global configuration options",
-    optionTemplate
+    startConfigOptionTemplate
+  )
+  .command(
+    ["resource [options]", "r"],
+    "Edit global resource mappings (namespaces)",
+    resourceOptionTemplate
   )
   .demandCommand(1, 1)
   .hide("version")
@@ -38,15 +60,23 @@ const args = require("yargs")
 const command: string = args._[0];
 const options = {};
 Object.keys(args)
-  .filter(key => key in optionTemplate)
+  .filter(
+    key => key in startConfigOptionTemplate || key in resourceOptionTemplate
+  )
   .forEach(key => (options[key] = args[key]));
 
-if (command.charAt(0) === "r") {
+if (command.charAt(0) === "s") {
   startServer(options);
 } else if (command.charAt(0) === "c") {
   if (Object.keys(options).length) {
     saveConfig(options);
   } else {
     displayConfig();
+  }
+} else if (command.charAt(0) === "r") {
+  if (Object.keys(options).length) {
+    modifyResources(options);
+  } else {
+    displayResources();
   }
 }
