@@ -36,7 +36,7 @@ function startServer(options) {
         Object.keys(options).forEach(key => (projectConfig[key] = options[key]));
         const macetaConfiguration = yield getMacetaConfig(basePath);
         if ("ui5LibraryPath" in macetaConfiguration) {
-            projectConfig.localLibraryPath = macetaConfiguration.ui5LibraryPath;
+            projectConfig.localLibraryPath = getAbolutePath(basePath, macetaConfiguration.ui5LibraryPath);
         }
         if (projectConfig.localLibraryPath == undefined) {
             consoleOutput_1.logError("No UI5 library path is configured!");
@@ -60,7 +60,7 @@ function startServer(options) {
         }
         projectConfig.componentPath = yield getManifestDir(basePath);
         if ("oDataPath" in macetaConfiguration) {
-            projectConfig.oDataPath = macetaConfiguration.oDataPath;
+            projectConfig.oDataPath = getAbolutePath(basePath, macetaConfiguration.oDataPath);
         }
         else {
             const oDataPath = yield getOdataDir(basePath);
@@ -90,12 +90,10 @@ function startServer(options) {
                         server.setShellLanguages(configs[key].languages);
                     }
                     if ("resourceMap" in configs[key]) {
-                        let rsPath = configs[key].resourcePath;
+                        let rsPath = configs[key].resourceMap;
                         Object.keys(rsPath).forEach(namespace => server.createResourcePath({
                             namespace,
-                            path: rsPath[namespace]
-                            //shellConfigurationKey: key,
-                            //sapServer: true
+                            path: getAbolutePath(basePath, rsPath[namespace])
                         }));
                     }
                 });
@@ -119,6 +117,12 @@ function startServer(options) {
     });
 }
 exports.startServer = startServer;
+function getAbolutePath(rootDir, filePath) {
+    if (path.isAbsolute(filePath)) {
+        return filePath;
+    }
+    return path.join(rootDir, filePath);
+}
 function getMacetaConfig(applicationDir) {
     return __awaiter(this, void 0, void 0, function* () {
         let directories = directoryTree(applicationDir, {
@@ -182,24 +186,6 @@ function getMacetaDirectoryChoice(directories) {
         });
     }
 }
-function createShellConfigPrompt() {
-    consoleOutput_1.logNewline();
-    let prompt = new ConfirmPrompt({
-        name: "createShellConfigPrompt",
-        message: "Do you want to create a temporary default shell configuration?",
-        ui: readlineUi
-    });
-    return new Promise((resolve, reject) => {
-        prompt.ask(selected => {
-            if (typeof selected === "boolean") {
-                resolve(selected);
-            }
-            else {
-                reject("Nothing selected!");
-            }
-        });
-    });
-}
 // read the shellConfig.json. if there are more options besides default
 // then prompt for a choice.
 function getShellId(shellConfig) {
@@ -261,8 +247,21 @@ function getManifestDir(applicationDir) {
                 dirObject.children.forEach(entry => searchManifest(entry));
             }
         }
+        // no async array.filter yet :-(
+        let manifestDirectories = [];
+        for (let dir of foundDirectories) {
+            try {
+                let manifest = yield fileSystem.readJson(path.join(dir, "manifest.json"));
+                if ("sap.app" in manifest &&
+                    "type" in manifest["sap.app"] &&
+                    manifest["sap.app"].type === "application") {
+                    manifestDirectories.push(dir);
+                }
+            }
+            catch (e) { }
+        }
         try {
-            return yield getManifestDirectoryChoice(foundDirectories);
+            return yield getManifestDirectoryChoice(manifestDirectories);
         }
         catch (error) {
             consoleOutput_1.logError(`${error}`);

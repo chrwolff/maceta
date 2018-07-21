@@ -31,7 +31,10 @@ export async function startServer(options) {
 
   const macetaConfiguration: any = await getMacetaConfig(basePath);
   if ("ui5LibraryPath" in macetaConfiguration) {
-    projectConfig.localLibraryPath = macetaConfiguration.ui5LibraryPath;
+    projectConfig.localLibraryPath = getAbolutePath(
+      basePath,
+      macetaConfiguration.ui5LibraryPath
+    );
   }
 
   if (projectConfig.localLibraryPath == undefined) {
@@ -57,7 +60,10 @@ export async function startServer(options) {
   projectConfig.componentPath = await getManifestDir(basePath);
 
   if ("oDataPath" in macetaConfiguration) {
-    projectConfig.oDataPath = macetaConfiguration.oDataPath;
+    projectConfig.oDataPath = getAbolutePath(
+      basePath,
+      macetaConfiguration.oDataPath
+    );
   } else {
     const oDataPath = await getOdataDir(basePath);
     if (oDataPath != undefined) {
@@ -90,13 +96,11 @@ export async function startServer(options) {
           server.setShellLanguages(configs[key].languages);
         }
         if ("resourceMap" in configs[key]) {
-          let rsPath = configs[key].resourcePath;
+          let rsPath = configs[key].resourceMap;
           Object.keys(rsPath).forEach(namespace =>
             server.createResourcePath({
               namespace,
-              path: rsPath[namespace]
-              //shellConfigurationKey: key,
-              //sapServer: true
+              path: getAbolutePath(basePath, rsPath[namespace])
             })
           );
         }
@@ -118,6 +122,13 @@ export async function startServer(options) {
   } catch (e) {
     logError(e);
   }
+}
+
+function getAbolutePath(rootDir: string, filePath: string): string {
+  if (path.isAbsolute(filePath)) {
+    return filePath;
+  }
+  return path.join(rootDir, filePath);
 }
 
 async function getMacetaConfig(applicationDir): Promise<object> {
@@ -191,24 +202,6 @@ function getMacetaDirectoryChoice(directories) {
   }
 }
 
-function createShellConfigPrompt(): Promise<boolean> {
-  logNewline();
-  let prompt = new ConfirmPrompt({
-    name: "createShellConfigPrompt",
-    message: "Do you want to create a temporary default shell configuration?",
-    ui: readlineUi
-  });
-  return new Promise((resolve, reject) => {
-    prompt.ask(selected => {
-      if (typeof selected === "boolean") {
-        resolve(selected);
-      } else {
-        reject("Nothing selected!");
-      }
-    });
-  });
-}
-
 // read the shellConfig.json. if there are more options besides default
 // then prompt for a choice.
 async function getShellId(shellConfig: any): Promise<string> {
@@ -274,8 +267,23 @@ async function getManifestDir(applicationDir) {
     }
   }
 
+  // no async array.filter yet :-(
+  let manifestDirectories = [];
+  for (let dir of foundDirectories) {
+    try {
+      let manifest = await fileSystem.readJson(path.join(dir, "manifest.json"));
+      if (
+        "sap.app" in manifest &&
+        "type" in manifest["sap.app"] &&
+        manifest["sap.app"].type === "application"
+      ) {
+        manifestDirectories.push(dir);
+      }
+    } catch (e) {}
+  }
+
   try {
-    return await getManifestDirectoryChoice(foundDirectories);
+    return await getManifestDirectoryChoice(manifestDirectories);
   } catch (error) {
     logError(`${error}`);
   }
