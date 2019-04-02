@@ -1,56 +1,55 @@
-#!/usr/bin/env node
-
 import { startServer } from "./startServer";
 import { saveConfig, displayConfig } from "./handleConfig";
 import { modifyResources, displayResources } from "./handleResources";
+import * as yargs from "yargs";
 
-const startConfigOptionTemplate = {
+const startConfigOptionTemplate: yargs.CommandBuilder = {
   ui5LibraryPath: {
     alias: "ui5",
     type: "string",
-    desc: "Absolute path to UI5 library"
+    desc: "Absolute path to UI5 library",
   },
   hostname: {
     alias: "h",
     type: "string",
-    desc: "Hostname for the local server"
+    desc: "Hostname for the local server",
   },
   port: {
     alias: "p",
     type: "number",
-    desc: "Port for the application"
-  }
+    desc: "Port for the application",
+  },
 };
 
-const resourceOptionTemplate = {
+const resourceOptionTemplate: yargs.CommandBuilder = {
   namespace: {
     alias: "n",
     type: "string",
-    desc: "Namespace that shall be configured"
+    desc: "Namespace that shall be configured",
   },
   delete: {
     alias: "d",
     type: "boolean",
-    desc: "Delete configuration of the given namespace"
-  }
+    desc: "Delete configuration of the given namespace",
+  },
 };
 
-const args = require("yargs")
+const args = yargs
   .scriptName("maceta")
   .command(
     ["start [option]", "s"],
     "Start maceta in current working directory",
-    startConfigOptionTemplate
+    startConfigOptionTemplate,
   )
   .command(
     ["config [option]", "c"],
     "Set global configuration options",
-    startConfigOptionTemplate
+    startConfigOptionTemplate,
   )
   .command(
     ["resource [options]", "r"],
     "Edit global resource mappings (namespaces)",
-    resourceOptionTemplate
+    resourceOptionTemplate,
   )
   .demandCommand(1, 1)
   .hide("version")
@@ -61,7 +60,7 @@ const command: string = args._[0];
 const options = {};
 Object.keys(args)
   .filter(
-    key => key in startConfigOptionTemplate || key in resourceOptionTemplate
+    key => key in startConfigOptionTemplate || key in resourceOptionTemplate,
   )
   .forEach(key => (options[key] = args[key]));
 

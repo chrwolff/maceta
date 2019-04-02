@@ -24,7 +24,7 @@ export async function startServer(options) {
       ? configFile.get("ui5LibraryPath")
       : null,
     hostname: configFile.get("hostname"),
-    port: configFile.get("port")
+    port: configFile.get("port"),
   };
 
   Object.keys(options).forEach(key => (projectConfig[key] = options[key]));
@@ -33,7 +33,7 @@ export async function startServer(options) {
   if ("ui5LibraryPath" in macetaConfiguration) {
     projectConfig.localLibraryPath = getAbolutePath(
       basePath,
-      macetaConfiguration.ui5LibraryPath
+      macetaConfiguration.ui5LibraryPath,
     );
   }
 
@@ -62,7 +62,7 @@ export async function startServer(options) {
   if ("oDataPath" in macetaConfiguration) {
     projectConfig.oDataPath = getAbolutePath(
       basePath,
-      macetaConfiguration.oDataPath
+      macetaConfiguration.oDataPath,
     );
   } else {
     const oDataPath = await getOdataDir(basePath);
@@ -82,8 +82,8 @@ export async function startServer(options) {
       Object.keys(fileResources).forEach(key =>
         server.createResourcePath({
           namespace: key,
-          path: fileResources[key]
-        })
+          path: fileResources[key],
+        }),
       );
     }
     if ("shell" in macetaConfiguration) {
@@ -100,8 +100,8 @@ export async function startServer(options) {
           Object.keys(rsPath).forEach(namespace =>
             server.createResourcePath({
               namespace,
-              path: getAbolutePath(basePath, rsPath[namespace])
-            })
+              path: getAbolutePath(basePath, rsPath[namespace]),
+            }),
           );
         }
       });
@@ -134,7 +134,7 @@ function getAbolutePath(rootDir: string, filePath: string): string {
 async function getMacetaConfig(applicationDir): Promise<object> {
   let directories = directoryTree(applicationDir, {
     extensions: /\.json/,
-    exclude: /node_modules/
+    exclude: /node_modules/,
   });
 
   let foundDirectories = [];
@@ -145,7 +145,7 @@ async function getMacetaConfig(applicationDir): Promise<object> {
       if (
         dirObject.children.reduce(
           (hasFile, entry) => hasFile || entry.name === "maceta.config.json",
-          false
+          false,
         )
       ) {
         foundDirectories.push(dirObject.path);
@@ -167,7 +167,7 @@ async function getMacetaConfig(applicationDir): Promise<object> {
 
   try {
     return await fileSystem.readJson(
-      path.join(selectedDirectory, "maceta.config.json")
+      path.join(selectedDirectory, "maceta.config.json"),
     );
   } catch (e) {
     logError(`${e}`);
@@ -188,7 +188,7 @@ function getMacetaDirectoryChoice(directories) {
       message:
         "Select the maceta configuration directory\n(Select with the spacebar, continue with enter)",
       choices: directories,
-      ui: readlineUi
+      ui: readlineUi,
     });
     return new Promise((resolve, reject) => {
       prompt.ask(selected => {
@@ -229,7 +229,7 @@ function shellConfigIdPrompt(configKeys): Promise<string> {
       "Select a shell configuration key\n(Select with the spacebar, continue with enter)",
     default: "default",
     choices: configKeys,
-    ui: readlineUi
+    ui: readlineUi,
   });
   return new Promise((resolve, reject) => {
     prompt.ask(selected => {
@@ -247,7 +247,7 @@ function shellConfigIdPrompt(configKeys): Promise<string> {
 async function getManifestDir(applicationDir) {
   let directories = directoryTree(applicationDir, {
     extensions: /\.json/,
-    exclude: /node_modules/
+    exclude: /node_modules/,
   });
 
   let foundDirectories = [];
@@ -258,7 +258,7 @@ async function getManifestDir(applicationDir) {
       if (
         dirObject.children.reduce(
           (hasManifest, entry) => hasManifest || entry.name === "manifest.json",
-          false
+          false,
         )
       ) {
         foundDirectories.push(dirObject.path);
@@ -302,7 +302,7 @@ function getManifestDirectoryChoice(directories) {
       message:
         "Select the app directory\n(Select with the spacebar, continue with enter)",
       choices: directories,
-      ui: readlineUi
+      ui: readlineUi,
     });
     return new Promise((resolve, reject) => {
       prompt.ask(selected => {
@@ -330,7 +330,7 @@ async function getOdataDir(applicationDir) {
 async function getIndexHtmlPath(applicationDir): Promise<string> {
   let directories = directoryTree(applicationDir, {
     extensions: /\.html/,
-    exclude: /node_modules/
+    exclude: /node_modules/,
   });
 
   let foundDirectories = [];
@@ -341,7 +341,7 @@ async function getIndexHtmlPath(applicationDir): Promise<string> {
       if (
         dirObject.children.reduce(
           (found, entry) => found || entry.name === "index.html",
-          false
+          false,
         )
       ) {
         foundDirectories.push(dirObject.path);
@@ -370,7 +370,7 @@ function getIndexHtmlDirectoryChoice(directories) {
       message:
         "Select the index.html directory\n(Select with the spacebar, continue with enter)",
       choices: directories,
-      ui: readlineUi
+      ui: readlineUi,
     });
     return new Promise((resolve, reject) => {
       prompt.ask(selected => {

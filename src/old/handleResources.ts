@@ -27,7 +27,7 @@ export async function modifyResources(options) {
 function requestPath() {
   const question = new Prompt({
     name: "directory",
-    message: "Absolute path to resource directory (abort with blank input): "
+    message: "Absolute path to resource directory (abort with blank input): ",
   });
   return new Promise((resolve, reject) => {
     question.ask((answer: string) => {
@@ -83,7 +83,7 @@ function configToConsole(configuration) {
   ) {
     logSuccess("Current global resources configuration");
     Object.keys(configuration.resourceMap).forEach(key =>
-      console.log(`${key}: ${configuration.resourceMap[key]}`)
+      console.log(`${key}: ${configuration.resourceMap[key]}`),
     );
   } else {
     logWarning("No resources configured yet");

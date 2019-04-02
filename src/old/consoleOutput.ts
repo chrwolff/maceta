@@ -4,7 +4,7 @@ enum ConsoleColors {
   error = "\x1b[31m",
   warning = "\x1b[33m",
   default = "\x1b[37m",
-  emphasize = "\x1b[1m"
+  emphasize = "\x1b[1m",
 }
 
 export function logNewline() {
