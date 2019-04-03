@@ -3,31 +3,27 @@ import * as path from "path";
 import * as fileSystem from "fs-extra";
 import * as mime from "mime";
 import { Response } from "express";
-import {
-  Controller,
-  Get,
-  Req,
-  Request,
-  Res,
-  HttpStatus,
-  Logger,
-} from "@nestjs/common";
-import { ConfigurationProvider } from "../configurationProvider";
+import { Controller, Get, Req, Request, Res, HttpStatus } from "@nestjs/common";
+import { ServerConfiguration } from "../configuration/serverConfiguration.provider";
+import { Logger } from "../logger";
 
 const CACHE_TIME = 24 * 60 * 60;
 
 @Controller()
 export class SapRouter {
-  constructor(private configuration: ConfigurationProvider) {}
+  constructor(
+    private configuration: ServerConfiguration,
+    private logger: Logger,
+  ) {}
 
   @Get("/sap/public/bc/ui5_ui5/*")
   getLibrary(@Req() req: Request, @Res() res: Response) {
     let fullPath = url.parse(req.url).pathname;
 
-    Logger.log(`File request: ${fullPath}`, SapRouter.name);
+    this.logger.log(`File request: ${fullPath}`);
 
     fullPath = path.join(
-      this.configuration.localLibraryPath,
+      this.configuration.ui5LibraryPath,
       fullPath
         .split("/")
         .slice(5)

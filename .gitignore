@@ -3,3 +3,4 @@ node_modules
 .vscode/launch.json
 config/local.json
 yarn-error.log
+coverage

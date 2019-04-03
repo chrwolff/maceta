@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -17,40 +20,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ConfigurationProvider_1;
 const path = require("path");
 const fileSystem = require("fs-extra");
+const configurationBase_1 = require("./configurationBase");
 const common_1 = require("@nestjs/common");
-const CONFIG_PATH = path.join(__dirname, "..", "config");
-process.env.NODE_CONFIG_DIR = CONFIG_PATH;
-const config = require("config");
-let mergedConfiguration = config.util.toObject();
-let ConfigurationProvider = ConfigurationProvider_1 = class ConfigurationProvider {
-    constructor() {
-        common_1.Logger.log("Constructor", ConfigurationProvider_1.name);
-        this.localHostname = config.get("hostname");
-        this.localPort = config.get("port");
-        this.localLibraryPath = "C:/workspace/ui5-lib/sapui5-sdk-1.63.1";
-        this.resourceMap = {};
+const logger_1 = require("../logger");
+let CliConfiguration = class CliConfiguration extends configurationBase_1.ConfigurationBase {
+    constructor(config, logger) {
+        super(config);
+        this.logger = logger;
     }
-    static saveConfig(configuration) {
+    saveOptions(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const configPath = path.join(CONFIG_PATH, "local.json");
-            mergedConfiguration = config.util.extendDeep(mergedConfiguration, configuration);
-            const localConfiguration = config.util.diffDeep(mergedConfiguration, configuration);
-            yield fileSystem.writeJson(configPath, localConfiguration);
-            ConfigurationProvider_1.displayConfiguration();
+            this.mergedConfiguration = this.config.util.extendDeep(this.mergedConfiguration, options);
+            const configPath = path.join(configurationBase_1.CONFIG_PATH, "local.json");
+            yield fileSystem.writeJson(configPath, this.mergedConfiguration);
         });
     }
-    static displayConfiguration() {
-        common_1.Logger.log("\nCurrent global maceta configuration");
-        Object.keys(mergedConfiguration)
+    displayConfiguration() {
+        this.logger.log("Current global maceta configuration");
+        Object.keys(this.mergedConfiguration)
             .filter(key => key !== "resourceMap")
-            .forEach(key => console.log(`${key}: ${mergedConfiguration[key]}`));
+            .forEach(key => this.logger.log(`${key}: ${this.mergedConfiguration[key]}`));
+        this.logger.newLine();
     }
 };
-ConfigurationProvider = ConfigurationProvider_1 = __decorate([
+CliConfiguration = __decorate([
     common_1.Injectable(),
-    __metadata("design:paramtypes", [])
-], ConfigurationProvider);
-exports.ConfigurationProvider = ConfigurationProvider;
+    __param(0, common_1.Inject(configurationBase_1.CONFIG_INJECT)),
+    __metadata("design:paramtypes", [Object, logger_1.Logger])
+], CliConfiguration);
+exports.CliConfiguration = CliConfiguration;

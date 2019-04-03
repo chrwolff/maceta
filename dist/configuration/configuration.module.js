@@ -7,17 +7,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
-const sapRouter_1 = require("./sapRouter");
-const serverConfiguration_provider_1 = require("../configuration/serverConfiguration.provider");
+const cliConfiguration_provider_1 = require("./cliConfiguration.provider");
 const configurationBase_1 = require("../configuration/configurationBase");
 const logger_1 = require("../logger");
 const PersistedConfiguration = configurationBase_1.ConfigurationBase.getPersistedConfiguration();
-let ServerModule = class ServerModule {
+let ConfigurationModule = class ConfigurationModule {
 };
-ServerModule = __decorate([
+ConfigurationModule = __decorate([
     common_1.Module({
-        controllers: [sapRouter_1.SapRouter],
-        providers: [serverConfiguration_provider_1.ServerConfiguration, PersistedConfiguration, logger_1.Logger],
+        providers: [cliConfiguration_provider_1.CliConfiguration, PersistedConfiguration, logger_1.Logger],
     })
-], ServerModule);
-exports.ServerModule = ServerModule;
+], ConfigurationModule);
+exports.ConfigurationModule = ConfigurationModule;

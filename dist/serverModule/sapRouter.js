@@ -12,22 +12,23 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var SapRouter_1;
 const url = require("url");
 const path = require("path");
 const fileSystem = require("fs-extra");
 const mime = require("mime");
 const common_1 = require("@nestjs/common");
-const configurationProvider_1 = require("../configurationProvider");
+const serverConfiguration_provider_1 = require("../configuration/serverConfiguration.provider");
+const logger_1 = require("../logger");
 const CACHE_TIME = 24 * 60 * 60;
-let SapRouter = SapRouter_1 = class SapRouter {
-    constructor(configuration) {
+let SapRouter = class SapRouter {
+    constructor(configuration, logger) {
         this.configuration = configuration;
+        this.logger = logger;
     }
     getLibrary(req, res) {
         let fullPath = url.parse(req.url).pathname;
-        common_1.Logger.log(`File request: ${fullPath}`, SapRouter_1.name);
-        fullPath = path.join(this.configuration.localLibraryPath, fullPath
+        this.logger.log(`File request: ${fullPath}`);
+        fullPath = path.join(this.configuration.ui5LibraryPath, fullPath
             .split("/")
             .slice(5)
             .join("/"));
@@ -69,8 +70,9 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], SapRouter.prototype, "startUp", null);
-SapRouter = SapRouter_1 = __decorate([
+SapRouter = __decorate([
     common_1.Controller(),
-    __metadata("design:paramtypes", [configurationProvider_1.ConfigurationProvider])
+    __metadata("design:paramtypes", [serverConfiguration_provider_1.ServerConfiguration,
+        logger_1.Logger])
 ], SapRouter);
 exports.SapRouter = SapRouter;

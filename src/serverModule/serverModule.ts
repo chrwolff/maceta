@@ -1,9 +1,13 @@
 import { Module } from "@nestjs/common";
 import { SapRouter } from "./sapRouter";
-import { ConfigurationProvider } from "../configurationProvider";
+import { ServerConfiguration } from "../configuration/serverConfiguration.provider";
+import { ConfigurationBase } from "../configuration/configurationBase";
+import { Logger } from "../logger";
+
+const PersistedConfiguration = ConfigurationBase.getPersistedConfiguration();
 
 @Module({
   controllers: [SapRouter],
-  providers: [ConfigurationProvider],
+  providers: [ServerConfiguration, PersistedConfiguration, Logger],
 })
 export class ServerModule {}

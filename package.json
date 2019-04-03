@@ -30,13 +30,17 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "start:dev": "nodemon",
-    "start:debug": "nodemon --config nodemon-debug.json"
+    "start:debug": "nodemon --config nodemon-debug.json",
+    "test": "jest",
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@nestjs/common": "6.0.5",
     "@nestjs/core": "6.0.5",
     "@nestjs/platform-express": "^6.0.2",
+    "@types/cli-color": "^0.3.29",
     "@types/mime": "^2.0.1",
+    "cli-color": "^1.4.0",
     "config": "^3.0.1",
     "directory-tree": "^2.1.0",
     "fs-extra": "^7.0.1",
@@ -52,6 +56,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.4.0",
     "typescript": "^3.4.1",
+    "validator": "^10.11.0",
     "yargs": "^13.2.2"
   },
   "devDependencies": {
@@ -72,5 +77,19 @@
     "ts-node": "^8.0.3",
     "tsconfig-paths": "^3.5.0",
     "tslint": "5.15.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }

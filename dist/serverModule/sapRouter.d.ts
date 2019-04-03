@@ -1,8 +1,10 @@
 import { Response } from "express";
-import { ConfigurationProvider } from "../configurationProvider";
+import { ServerConfiguration } from "../configuration/serverConfiguration.provider";
+import { Logger } from "../logger";
 export declare class SapRouter {
     private configuration;
-    constructor(configuration: ConfigurationProvider);
+    private logger;
+    constructor(configuration: ServerConfiguration, logger: Logger);
     getLibrary(req: Request, res: Response): void;
     startUp(res: Response): void;
 }
