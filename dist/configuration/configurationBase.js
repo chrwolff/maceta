@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fileSystem = require("fs-extra");
 const common_1 = require("@nestjs/common");
-exports.CONFIG_INJECT = "CONFIGURATION";
+exports.CONFIG_INJECT = "GLOBAL_CONFIGURATION";
 exports.CONFIG_PATH = path.join(__dirname, "../..", "config");
 class ConfigurationBase {
     constructor(config) {
         this.config = config;
         this.mergedConfiguration = config.util.toObject();
     }
-    static getPersistedConfiguration(configPath) {
+    static getGlobalConfiguration(configPath) {
         if (!configPath) {
             configPath = exports.CONFIG_PATH;
         }
@@ -28,7 +28,7 @@ class ConfigurationBase {
         if (path.isAbsolute(filePath)) {
             return filePath;
         }
-        return path.join(process.cwd(), filePath);
+        return path.join(ConfigurationBase.basePath, filePath);
     }
     static pathExists(filePath) {
         try {
@@ -41,4 +41,5 @@ class ConfigurationBase {
         }
     }
 }
+ConfigurationBase.basePath = process.cwd();
 exports.ConfigurationBase = ConfigurationBase;

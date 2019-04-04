@@ -4,7 +4,7 @@ import { ServerConfiguration } from "../configuration/serverConfiguration.provid
 import { ConfigurationBase } from "../configuration/configurationBase";
 import { Logger } from "../logger";
 
-const PersistedConfiguration = ConfigurationBase.getPersistedConfiguration();
+const PersistedConfiguration = ConfigurationBase.getGlobalConfiguration();
 
 @Module({
   controllers: [SapRouter],

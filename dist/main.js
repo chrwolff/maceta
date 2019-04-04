@@ -16,6 +16,9 @@ const configuration_module_1 = require("./configuration/configuration.module");
 const cliConfiguration_provider_1 = require("./configuration/cliConfiguration.provider");
 const logger_1 = require("./logger");
 const yargs = require("yargs");
+if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+}
 const startConfigOptionTemplate = {
     ui5LibraryPath: {
         alias: "ui5",
@@ -92,12 +95,13 @@ function startServer(options) {
         const logger = app.get(logger_1.Logger);
         try {
             configuration.setOptions(options);
+            yield configuration.determineLocaleConfiguration();
             configuration.checkAndSeal();
             logger.log(`Server starting at ${configuration.hostname}:${configuration.port}`);
             yield app.listenAsync(configuration.port, configuration.hostname);
         }
-        catch (e) {
-            logger.error(e.message, e.trace);
+        catch (error) {
+            logger.error(error);
             process.exit();
         }
     });

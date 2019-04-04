@@ -25,7 +25,7 @@ export class CliConfiguration extends ConfigurationBase {
     );
 
     // save config
-    const configPath = path.join(CONFIG_PATH, "local.json");
+    const configPath = path.join(CONFIG_PATH, `${process.env.NODE_ENV}.json`);
     await fileSystem.writeJson(configPath, this.mergedConfiguration);
   }
 

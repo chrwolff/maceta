@@ -11,10 +11,24 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const validator = require("validator");
+const fileSystem = require("fs-extra");
+const path = require("path");
+const directoryTree = require("directory-tree");
+const PromptRadio = require("prompt-radio");
+const readlineUi = require("readline-ui");
 const configurationBase_1 = require("./configurationBase");
 const common_1 = require("@nestjs/common");
+const logger_1 = require("../logger");
 var Exceptions;
 (function (Exceptions) {
     Exceptions["PORT_WRONG"] = "Port not configured correctly";
@@ -23,8 +37,9 @@ var Exceptions;
     Exceptions["IS_SEALED"] = "Configuration cannot be changed after first get";
 })(Exceptions = exports.Exceptions || (exports.Exceptions = {}));
 let ServerConfiguration = class ServerConfiguration extends configurationBase_1.ConfigurationBase {
-    constructor(config) {
+    constructor(config, logger) {
         super(config);
+        this.logger = logger;
         this.isChecked = false;
         this.options = {
             hostname: this.config.has("hostname")
@@ -75,10 +90,150 @@ let ServerConfiguration = class ServerConfiguration extends configurationBase_1.
             throw new Error(Exceptions.LIBRARY_WRONG);
         }
     }
+    determineLocaleConfiguration(withInteraction = false) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.readlineUi = readlineUi.create();
+            const localConfiguration = yield this.getLocalConfiguration(withInteraction);
+            const componentPath = yield this.getManifestDir(withInteraction);
+            this.readlineUi.close();
+        });
+    }
+    getLocalConfiguration(withInteraction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const directories = directoryTree(configurationBase_1.ConfigurationBase.basePath, {
+                extensions: /\.json/,
+                exclude: /node_modules/,
+            });
+            const foundDirectories = [];
+            searchMacetaConfig(directories);
+            function searchMacetaConfig(dirObject) {
+                if ("children" in dirObject) {
+                    if (dirObject.children.reduce((hasFile, entry) => hasFile || entry.name === "maceta.config.json", false)) {
+                        foundDirectories.push(dirObject.path);
+                    }
+                    dirObject.children.forEach(entry => searchMacetaConfig(entry));
+                }
+            }
+            let selectedDirectory;
+            if (foundDirectories.length === 0) {
+                this.logger.warn("No maceta.config.json found");
+            }
+            else if (foundDirectories.length === 1) {
+                this.logger.log(`Using maceta.config.json from ${foundDirectories[0]}`);
+                selectedDirectory = foundDirectories[0];
+            }
+            else if (withInteraction) {
+                try {
+                    selectedDirectory = yield this.getMacetaDirectoryChoice(foundDirectories);
+                }
+                catch (error) {
+                    this.logger.warn("No directory selected!");
+                }
+            }
+            if (!selectedDirectory) {
+                return {};
+            }
+            try {
+                const fileContent = yield fileSystem.readJson(path.join(selectedDirectory, "maceta.config.json"));
+                const localConfiguration = Object.assign({}, fileContent);
+                return localConfiguration;
+            }
+            catch (error) {
+                this.logger.error(error);
+            }
+        });
+    }
+    getMacetaDirectoryChoice(directories) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.logger.newLine();
+                const prompt = new PromptRadio({
+                    name: "macetaConfigDir",
+                    message: "Select the maceta configuration directory\n(Select with the spacebar, continue with enter)",
+                    choices: directories,
+                    ui: this.readlineUi,
+                });
+                prompt.ask(selected => {
+                    if (selected) {
+                        resolve(selected);
+                    }
+                    else {
+                        reject();
+                    }
+                });
+            });
+        });
+    }
+    getManifestDir(withInteraction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const directories = directoryTree(configurationBase_1.ConfigurationBase.basePath, {
+                extensions: /\.json/,
+                exclude: /node_modules/,
+            });
+            const foundDirectories = [];
+            searchManifest(directories);
+            function searchManifest(dirObject) {
+                if ("children" in dirObject) {
+                    if (dirObject.children.reduce((hasManifest, entry) => hasManifest || entry.name === "manifest.json", false)) {
+                        foundDirectories.push(dirObject.path);
+                    }
+                    dirObject.children.forEach(entry => searchManifest(entry));
+                }
+            }
+            const manifestDirectories = [];
+            for (const dir of foundDirectories) {
+                try {
+                    const manifest = yield fileSystem.readJson(path.join(dir, "manifest.json"));
+                    if ("sap.app" in manifest &&
+                        "type" in manifest["sap.app"] &&
+                        manifest["sap.app"].type === "application") {
+                        manifestDirectories.push(dir);
+                    }
+                }
+                catch (e) { }
+            }
+            if (manifestDirectories.length === 1) {
+                this.logger.log(`Manifest folder found: ${manifestDirectories[0]}`);
+                return manifestDirectories[0];
+            }
+            else if (manifestDirectories.length > 1 && withInteraction) {
+                try {
+                    return yield this.getManifestDirectoryChoice(manifestDirectories);
+                }
+                catch (error) {
+                    this.logger.error("No manifest selected!");
+                }
+            }
+            else {
+                this.logger.error("No manifest found!");
+            }
+        });
+    }
+    getManifestDirectoryChoice(directories) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                this.logger.newLine();
+                const prompt = new PromptRadio({
+                    name: "manifestDir",
+                    message: "Select the app directory\n(Select with the spacebar, continue with enter)",
+                    choices: directories,
+                    ui: this.readlineUi,
+                });
+                prompt.ask(selected => {
+                    if (selected) {
+                        resolve(selected);
+                    }
+                    else {
+                        reject();
+                    }
+                });
+            });
+        });
+    }
 };
 ServerConfiguration = __decorate([
     common_1.Injectable(),
     __param(0, common_1.Inject(configurationBase_1.CONFIG_INJECT)),
-    __metadata("design:paramtypes", [Object])
+    __metadata("design:paramtypes", [Object, logger_1.Logger])
 ], ServerConfiguration);
 exports.ServerConfiguration = ServerConfiguration;

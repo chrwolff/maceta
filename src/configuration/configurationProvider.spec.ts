@@ -6,7 +6,7 @@ import {
 } from "./serverConfiguration.provider";
 import { ConfigurationBase } from "./configurationBase";
 
-const PersistedConfiguration = ConfigurationBase.getPersistedConfiguration(
+const PersistedConfiguration = ConfigurationBase.getGlobalConfiguration(
   "./",
 );
 

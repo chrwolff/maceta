@@ -1,6 +1,6 @@
 node_modules
 .vscode
 .vscode/launch.json
-config/local.json
 yarn-error.log
 coverage
+config/production.json

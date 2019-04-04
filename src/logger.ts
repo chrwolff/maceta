@@ -6,8 +6,18 @@ export class Logger implements LoggerService {
     Logger.write(message, clc.white);
   }
 
-  error(message: string, trace: string) {
-    Logger.write(message, clc.red);
+  error(error: string | Error, remark: string = "") {
+    if (typeof error === "string") {
+      Logger.write(error, clc.red);
+    } else {
+      Logger.write(error.message, clc.red);
+      Logger.write(error.stack, clc.red);
+    }
+
+    if (remark) {
+      Logger.write(remark, clc.red);
+    }
+    process.exit(0);
   }
 
   warn(message: string) {

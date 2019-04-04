@@ -33,7 +33,7 @@ let CliConfiguration = class CliConfiguration extends configurationBase_1.Config
     saveOptions(options) {
         return __awaiter(this, void 0, void 0, function* () {
             this.mergedConfiguration = this.config.util.extendDeep(this.mergedConfiguration, options);
-            const configPath = path.join(configurationBase_1.CONFIG_PATH, "local.json");
+            const configPath = path.join(configurationBase_1.CONFIG_PATH, `${process.env.NODE_ENV}.json`);
             yield fileSystem.writeJson(configPath, this.mergedConfiguration);
         });
     }

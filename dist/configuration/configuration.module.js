@@ -10,7 +10,7 @@ const common_1 = require("@nestjs/common");
 const cliConfiguration_provider_1 = require("./cliConfiguration.provider");
 const configurationBase_1 = require("../configuration/configurationBase");
 const logger_1 = require("../logger");
-const PersistedConfiguration = configurationBase_1.ConfigurationBase.getPersistedConfiguration();
+const PersistedConfiguration = configurationBase_1.ConfigurationBase.getGlobalConfiguration();
 let ConfigurationModule = class ConfigurationModule {
 };
 ConfigurationModule = __decorate([

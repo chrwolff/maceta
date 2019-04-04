@@ -11,7 +11,7 @@ const sapRouter_1 = require("./sapRouter");
 const serverConfiguration_provider_1 = require("../configuration/serverConfiguration.provider");
 const configurationBase_1 = require("../configuration/configurationBase");
 const logger_1 = require("../logger");
-const PersistedConfiguration = configurationBase_1.ConfigurationBase.getPersistedConfiguration();
+const PersistedConfiguration = configurationBase_1.ConfigurationBase.getGlobalConfiguration();
 let ServerModule = class ServerModule {
 };
 ServerModule = __decorate([
