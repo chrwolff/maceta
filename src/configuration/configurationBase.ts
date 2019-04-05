@@ -13,9 +13,31 @@ export interface Options {
   readonly ui5LibraryPath?: string;
 }
 
+export interface ResourceMap {
+  [key: string]: string;
+}
+
+export interface ApplicationConfiguration {
+  languages?: string[];
+  resourceMap?: ResourceMap;
+}
+
 // options from local application dir
 export interface LocalConfiguration {
   readonly ui5LibraryPath?: string;
+  readonly application?: {
+    [key: string]: ApplicationConfiguration;
+  };
+}
+
+export interface ShellConfiguration {
+  [key: string]: {
+    app: {
+      ui5ComponentName: string;
+      languages: string[];
+    };
+    resourcePath: ResourceMap;
+  };
 }
 
 export class ConfigurationBase {
@@ -38,23 +60,29 @@ export class ConfigurationBase {
     // https://github.com/lorenwest/node-config/wiki
     process.env.NODE_CONFIG_DIR = configPath;
     process.env.SUPPRESS_NO_CONFIG_WARNING = "true";
+    const config = require("config");
 
     return {
       provide: CONFIG_INJECT,
-      useValue: require("config"),
+      useValue: config,
     };
   }
 
-  protected static getAbolutePath(filePath: string): string {
+  protected static getAbsoluteNormalizedPath(filePath: string): string {
+    let absolutePath: string;
     if (path.isAbsolute(filePath)) {
-      return filePath;
+      absolutePath = filePath;
+    } else {
+      absolutePath = path.join(ConfigurationBase.basePath, filePath);
     }
-    return path.join(ConfigurationBase.basePath, filePath);
+    return path.normalize(absolutePath);
   }
 
   protected static pathExists(filePath: string): boolean {
     try {
-      const absolutePath = ConfigurationBase.getAbolutePath(filePath);
+      const absolutePath = ConfigurationBase.getAbsoluteNormalizedPath(
+        filePath,
+      );
       const stats = fileSystem.statSync(absolutePath);
       return stats.isDirectory();
     } catch (e) {

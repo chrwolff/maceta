@@ -5,17 +5,16 @@ import {
   Exceptions,
 } from "./serverConfiguration.provider";
 import { ConfigurationBase } from "./configurationBase";
+import { Logger } from "../logger";
 
-const PersistedConfiguration = ConfigurationBase.getGlobalConfiguration(
-  "./",
-);
+const PersistedConfiguration = ConfigurationBase.getGlobalConfiguration("./");
 
 describe("ServerConfiguration", () => {
   let configurationProvider: ServerConfiguration;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      providers: [ServerConfiguration, PersistedConfiguration],
+      providers: [ServerConfiguration, PersistedConfiguration, Logger],
     }).compile();
 
     configurationProvider = app.get<ServerConfiguration>(ServerConfiguration);

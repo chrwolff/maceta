@@ -62,7 +62,7 @@ let ServerConfiguration = class ServerConfiguration extends configurationBase_1.
     }
     get ui5LibraryPath() {
         this.checkAndSeal();
-        return configurationBase_1.ConfigurationBase.getAbolutePath(this.options.ui5LibraryPath);
+        return configurationBase_1.ConfigurationBase.getAbsoluteNormalizedPath(this.options.ui5LibraryPath);
     }
     setOptions(options) {
         if (this.isChecked) {
@@ -94,7 +94,7 @@ let ServerConfiguration = class ServerConfiguration extends configurationBase_1.
         return __awaiter(this, void 0, void 0, function* () {
             this.readlineUi = readlineUi.create();
             const localConfiguration = yield this.getLocalConfiguration(withInteraction);
-            const componentPath = yield this.getManifestDir(withInteraction);
+            const manifestProperties = yield this.getManifestDir(withInteraction);
             this.readlineUi.close();
         });
     }
@@ -180,25 +180,43 @@ let ServerConfiguration = class ServerConfiguration extends configurationBase_1.
                     dirObject.children.forEach(entry => searchManifest(entry));
                 }
             }
-            const manifestDirectories = [];
-            for (const dir of foundDirectories) {
-                try {
-                    const manifest = yield fileSystem.readJson(path.join(dir, "manifest.json"));
-                    if ("sap.app" in manifest &&
-                        "type" in manifest["sap.app"] &&
-                        manifest["sap.app"].type === "application") {
-                        manifestDirectories.push(dir);
-                    }
+            let manifestObjects = yield Promise.all(foundDirectories.map((directory) => __awaiter(this, void 0, void 0, function* () {
+                const manifest = yield fileSystem.readJson(path.join(directory, "manifest.json"));
+                const rawManifest = {
+                    directory,
+                    manifest,
+                };
+                return rawManifest;
+            })));
+            manifestObjects = manifestObjects.filter(entry => "sap.app" in entry.manifest &&
+                "type" in entry.manifest["sap.app"] &&
+                entry.manifest["sap.app"].type === "application");
+            const manifestPropertiesList = manifestObjects.map(entry => {
+                let componentId;
+                let libraries;
+                if ("sap.app" in entry.manifest && "id" in entry.manifest["sap.app"]) {
+                    componentId = entry.manifest["sap.app"].id;
                 }
-                catch (e) { }
+                if ("sap.ui5" in entry.manifest &&
+                    "dependencies" in entry.manifest["sap.ui5"] &&
+                    "libs" in entry.manifest["sap.ui5"].dependencies) {
+                    libraries = Object.keys(entry.manifest["sap.ui5"].dependencies.libs);
+                    libraries = libraries.filter(lib => lib.split(".")[0] !== "sap");
+                }
+                const manifestProperties = {
+                    componentId,
+                    libraries,
+                    directory: entry.directory,
+                };
+                return manifestProperties;
+            });
+            if (manifestPropertiesList.length === 1) {
+                this.logger.log(`Manifest folder found: ${manifestPropertiesList[0].directory}`);
+                return manifestPropertiesList[0];
             }
-            if (manifestDirectories.length === 1) {
-                this.logger.log(`Manifest folder found: ${manifestDirectories[0]}`);
-                return manifestDirectories[0];
-            }
-            else if (manifestDirectories.length > 1 && withInteraction) {
+            else if (manifestPropertiesList.length > 1 && withInteraction) {
                 try {
-                    return yield this.getManifestDirectoryChoice(manifestDirectories);
+                    return yield this.getManifestDirectoryChoice(manifestPropertiesList);
                 }
                 catch (error) {
                     this.logger.error("No manifest selected!");
@@ -209,14 +227,14 @@ let ServerConfiguration = class ServerConfiguration extends configurationBase_1.
             }
         });
     }
-    getManifestDirectoryChoice(directories) {
+    getManifestDirectoryChoice(manifestPropertiesList) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
                 this.logger.newLine();
                 const prompt = new PromptRadio({
                     name: "manifestDir",
                     message: "Select the app directory\n(Select with the spacebar, continue with enter)",
-                    choices: directories,
+                    choices: manifestPropertiesList.map(entry => entry.directory),
                     ui: this.readlineUi,
                 });
                 prompt.ask(selected => {

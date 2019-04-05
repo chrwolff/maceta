@@ -19,20 +19,25 @@ class ConfigurationBase {
         }
         process.env.NODE_CONFIG_DIR = configPath;
         process.env.SUPPRESS_NO_CONFIG_WARNING = "true";
+        const config = require("config");
         return {
             provide: exports.CONFIG_INJECT,
-            useValue: require("config"),
+            useValue: config,
         };
     }
-    static getAbolutePath(filePath) {
+    static getAbsoluteNormalizedPath(filePath) {
+        let absolutePath;
         if (path.isAbsolute(filePath)) {
-            return filePath;
+            absolutePath = filePath;
         }
-        return path.join(ConfigurationBase.basePath, filePath);
+        else {
+            absolutePath = path.join(ConfigurationBase.basePath, filePath);
+        }
+        return path.normalize(absolutePath);
     }
     static pathExists(filePath) {
         try {
-            const absolutePath = ConfigurationBase.getAbolutePath(filePath);
+            const absolutePath = ConfigurationBase.getAbsoluteNormalizedPath(filePath);
             const stats = fileSystem.statSync(absolutePath);
             return stats.isDirectory();
         }

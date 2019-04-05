@@ -16,9 +16,6 @@ const configuration_module_1 = require("./configuration/configuration.module");
 const cliConfiguration_provider_1 = require("./configuration/cliConfiguration.provider");
 const logger_1 = require("./logger");
 const yargs = require("yargs");
-if (!process.env.NODE_ENV) {
-    process.env.NODE_ENV = "production";
-}
 const startConfigOptionTemplate = {
     ui5LibraryPath: {
         alias: "ui5",

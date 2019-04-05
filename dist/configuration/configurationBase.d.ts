@@ -16,6 +16,6 @@ export declare class ConfigurationBase {
     protected static basePath: string;
     constructor(config: IConfig);
     static getGlobalConfiguration(configPath?: string): Provider;
-    protected static getAbolutePath(filePath: string): string;
+    protected static getAbsoluteNormalizedPath(filePath: string): string;
     protected static pathExists(filePath: string): boolean;
 }

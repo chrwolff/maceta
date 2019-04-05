@@ -8,10 +8,6 @@ import { CliConfiguration } from "./configuration/cliConfiguration.provider";
 import { Logger } from "./logger";
 import * as yargs from "yargs";
 
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = "production";
-}
-
 const startConfigOptionTemplate: yargs.CommandBuilder = {
   ui5LibraryPath: {
     alias: "ui5",

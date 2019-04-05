@@ -9,6 +9,9 @@ import {
   ConfigurationBase,
   Options,
   LocalConfiguration,
+  ApplicationConfiguration,
+  ResourceMap,
+  ShellConfiguration,
   CONFIG_INJECT,
 } from "./configurationBase";
 import { Injectable, Inject } from "@nestjs/common";
@@ -22,10 +25,15 @@ export enum Exceptions {
   IS_SEALED = "Configuration cannot be changed after first get",
 }
 
+interface ManifestProperties {
+  directory: string;
+  componentId: string;
+  libraries: string[];
+}
+
 @Injectable()
 export class ServerConfiguration extends ConfigurationBase {
   private options: Options;
-  public readonly resourceMap: { [key: string]: string };
   private isChecked: boolean = false;
   private readlineUi;
 
@@ -40,8 +48,6 @@ export class ServerConfiguration extends ConfigurationBase {
         ? this.config.get("ui5LibraryPath")
         : null,
     };
-
-    this.resourceMap = {};
   }
 
   get hostname(): string {
@@ -56,7 +62,9 @@ export class ServerConfiguration extends ConfigurationBase {
 
   get ui5LibraryPath(): string {
     this.checkAndSeal();
-    return ConfigurationBase.getAbolutePath(this.options.ui5LibraryPath);
+    return ConfigurationBase.getAbsoluteNormalizedPath(
+      this.options.ui5LibraryPath,
+    );
   }
 
   public setOptions(options: Options) {
@@ -101,9 +109,20 @@ export class ServerConfiguration extends ConfigurationBase {
       withInteraction,
     );
 
-    const componentPath: string = await this.getManifestDir(withInteraction);
+    const manifestProperties: ManifestProperties = await this.getManifestDir(
+      withInteraction,
+    );
 
     this.readlineUi.close();
+
+    if (localConfiguration) {
+      if (localConfiguration.ui5LibraryPath) {
+        const options: Options = {
+          ui5LibraryPath: localConfiguration.ui5LibraryPath,
+        };
+        this.setOptions(options);
+      }
+    }
   }
 
   private async getLocalConfiguration(
@@ -182,13 +201,15 @@ export class ServerConfiguration extends ConfigurationBase {
     });
   }
 
-  private async getManifestDir(withInteraction: boolean): Promise<string> {
+  private async getManifestDir(
+    withInteraction: boolean,
+  ): Promise<ManifestProperties> {
     const directories = directoryTree(ConfigurationBase.basePath, {
       extensions: /\.json/,
       exclude: /node_modules/,
     });
 
-    const foundDirectories = [];
+    const foundDirectories: string[] = [];
     searchManifest(directories);
 
     function searchManifest(dirObject) {
@@ -206,29 +227,61 @@ export class ServerConfiguration extends ConfigurationBase {
       }
     }
 
-    // no async array.filter yet :-(
-    const manifestDirectories: string[] = [];
-    for (const dir of foundDirectories) {
-      try {
-        const manifest = await fileSystem.readJson(
-          path.join(dir, "manifest.json"),
-        );
-        if (
-          "sap.app" in manifest &&
-          "type" in manifest["sap.app"] &&
-          manifest["sap.app"].type === "application"
-        ) {
-          manifestDirectories.push(dir);
-        }
-      } catch (e) {}
+    interface RawManifest {
+      manifest: object;
+      directory: string;
     }
 
-    if (manifestDirectories.length === 1) {
-      this.logger.log(`Manifest folder found: ${manifestDirectories[0]}`);
-      return manifestDirectories[0];
-    } else if (manifestDirectories.length > 1 && withInteraction) {
+    let manifestObjects = await Promise.all(
+      foundDirectories.map(async directory => {
+        const manifest = await fileSystem.readJson(
+          path.join(directory, "manifest.json"),
+        );
+        const rawManifest: RawManifest = {
+          directory,
+          manifest,
+        };
+        return rawManifest;
+      }),
+    );
+
+    manifestObjects = manifestObjects.filter(
+      entry =>
+        "sap.app" in entry.manifest &&
+        "type" in entry.manifest["sap.app"] &&
+        entry.manifest["sap.app"].type === "application",
+    );
+
+    const manifestPropertiesList = manifestObjects.map(entry => {
+      let componentId: string;
+      let libraries: string[];
+      if ("sap.app" in entry.manifest && "id" in entry.manifest["sap.app"]) {
+        componentId = entry.manifest["sap.app"].id;
+      }
+      if (
+        "sap.ui5" in entry.manifest &&
+        "dependencies" in entry.manifest["sap.ui5"] &&
+        "libs" in entry.manifest["sap.ui5"].dependencies
+      ) {
+        libraries = Object.keys(entry.manifest["sap.ui5"].dependencies.libs);
+        libraries = libraries.filter(lib => lib.split(".")[0] !== "sap");
+      }
+      const manifestProperties: ManifestProperties = {
+        componentId,
+        libraries,
+        directory: entry.directory,
+      };
+      return manifestProperties;
+    });
+
+    if (manifestPropertiesList.length === 1) {
+      this.logger.log(
+        `Manifest folder found: ${manifestPropertiesList[0].directory}`,
+      );
+      return manifestPropertiesList[0];
+    } else if (manifestPropertiesList.length > 1 && withInteraction) {
       try {
-        return await this.getManifestDirectoryChoice(manifestDirectories);
+        return await this.getManifestDirectoryChoice(manifestPropertiesList);
       } catch (error) {
         this.logger.error("No manifest selected!");
       }
@@ -237,14 +290,16 @@ export class ServerConfiguration extends ConfigurationBase {
     }
   }
 
-  private async getManifestDirectoryChoice(directories): Promise<string> {
+  private async getManifestDirectoryChoice(
+    manifestPropertiesList: ManifestProperties[],
+  ): Promise<ManifestProperties> {
     return new Promise((resolve, reject) => {
       this.logger.newLine();
       const prompt = new PromptRadio({
         name: "manifestDir",
         message:
           "Select the app directory\n(Select with the spacebar, continue with enter)",
-        choices: directories,
+        choices: manifestPropertiesList.map(entry => entry.directory),
         ui: this.readlineUi,
       });
 
