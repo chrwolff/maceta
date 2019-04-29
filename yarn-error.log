@@ -1,30 +1,20 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js add -D @types/prompt-question
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js add @nestjs/common
 
 PATH: 
-  C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client\;C:\ProgramData\Oracle\Java\javapath;C:\Program Files\Intel\iCLS Client\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\dotnet\;C:\Program Files\Microsoft VS Code\bin;C:\Users\christian.wolff\AppData\Local\Microsoft\WindowsApps;C:\Users\christian.wolff\AppData\Roaming\npm;C:\Users\christian.wolff\AppData\Local\Yarn\bin;C:\Users\christian.wolff\AppData\Local\Programs\Git\cmd
+  C:\Users\christian.wolff\AppData\Local\Programs\Git\mingw64\bin;C:\Users\christian.wolff\AppData\Local\Programs\Git\usr\bin;C:\Users\christian.wolff\bin;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Intel\iCLS Client;C:\ProgramData\Oracle\Java\javapath;C:\Program Files\Intel\iCLS Client;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi\bin;C:\Program Files\Common Files\Intel\WirelessCommon;C:\WINDOWS\System32\OpenSSH;C:\Program Files\dotnet;C:\Program Files\Microsoft VS Code\bin;C:\Program Files\Java\jdk-10.0.2\bin;C:\Program Files\Gradle\4.9\bin;C:\Go\bin;C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Program Files\sciter-sdk\bin;C:\Program Files\sciter-sdk\bin\64;C:\Users\christian.wolff\AppData\Local\Programs\Git\usr\bin;C:\HANA XS\xs.onpremise.runtime.client_ntamd64\bin;C:\Program Files (x86)\apache-maven-3.6.0\bin;C:\Program Files (x86)\Yarn\bin;C:\Program Files\nodejs;C:\Users\christian.wolff\.cargo\bin;C:\Users\christian.wolff\AppData\Local\Microsoft\WindowsApps;C:\Users\christian.wolff\AppData\Local\Programs\Git\cmd;C:\Users\christian.wolff\go\bin;C:\Users\christian.wolff\AppData\Roaming\Cloud Foundry;C:\Users\christian.wolff\AppData\Local\Yarn\bin;C:\Users\christian.wolff\AppData\Roaming\npm
 
 Yarn version: 
-  1.7.0
+  1.13.0
 
 Node version: 
-  10.5.0
+  10.15.3
 
 Platform: 
   win32 x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fprompt-question: Not found
-      at Request.params.callback [as _callback] (C:\Program Files (x86)\Yarn\lib\cli.js:65656:18)
-      at Request.self.callback (C:\Program Files (x86)\Yarn\lib\cli.js:134675:22)
-      at Request.emit (events.js:182:13)
-      at Request.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:135658:10)
-      at Request.emit (events.js:182:13)
-      at IncomingMessage.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:135578:12)
-      at Object.onceWrapper (events.js:273:13)
-      at IncomingMessage.emit (events.js:187:15)
-      at endReadableNT (_stream_readable.js:1081:12)
-      at process._tickCallback (internal/process/next_tick.js:63:19)
+  Error: EPERM: operation not permitted, unlink 'C:\workspace\maceta\node_modules\@babel\code-frame\lib'
 
 npm manifest: 
   {
@@ -32,7 +22,7 @@ npm manifest:
     "description": "A testbed for SAP UI5 applications",
     "preferGlobal": true,
     "bin": "js/main.js",
-    "version": "0.0.2",
+    "version": "0.5.2",
     "author": {
       "name": "Christian Wolff",
       "email": "chrwolff@gmx.net"
@@ -42,8 +32,17 @@ npm manifest:
       "UI5",
       "OpenUI5",
       "SAP",
-      "Fiori"
+      "Fiori",
+      "Test"
     ],
+    "homepage": "https://github.com/chrwolff/maceta/#readme",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/chrwolff/maceta"
+    },
+    "bugs": {
+      "url": "https://github.com/chrwolff/maceta/issues"
+    },
     "scripts": {},
     "dependencies": {
       "config": "^1.30.0",
@@ -53,6 +52,7 @@ npm manifest:
       "minimist": "^1.2.0",
       "opn": "^5.3.0",
       "path": "^0.12.7",
+      "prompt-base": "^5.0.0",
       "prompt-confirm": "^2.0.4",
       "prompt-question": "^5.0.2",
       "prompt-radio": "^1.2.1",
@@ -1622,6 +1622,20 @@ Lockfile:
   prompt-base@^4.0.1, prompt-base@^4.0.2:
     version "4.1.0"
     resolved "https://registry.yarnpkg.com/prompt-base/-/prompt-base-4.1.0.tgz#7b88e4c01b096c83d2f4e501a7e85f0d369ecd1f"
+    dependencies:
+      component-emitter "^1.2.1"
+      debug "^3.0.1"
+      koalas "^1.0.2"
+      log-utils "^0.2.1"
+      prompt-actions "^3.0.2"
+      prompt-question "^5.0.1"
+      readline-ui "^2.2.3"
+      readline-utils "^2.2.3"
+      static-extend "^0.1.2"
+  
+  prompt-base@^5.0.0:
+    version "5.0.0"
+    resolved "https://registry.yarnpkg.com/prompt-base/-/prompt-base-5.0.0.tgz#1f168dd94d0641aabb3411d4f12bbd6d12edeac1"
     dependencies:
       component-emitter "^1.2.1"
       debug "^3.0.1"

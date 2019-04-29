@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const fileSystem = require("fs-extra");
 const path = require("path");
+process.env["NODE_CONFIG_DIR"] = path.join(__dirname, "..", "config");
+const mergedConfiguration = require("config");
 function saveConfig(options) {
     return __awaiter(this, void 0, void 0, function* () {
-        // load current config
         const configPath = path.join(__dirname, "..", "config", "local.json");
         let configuration;
         try {
@@ -21,11 +22,24 @@ function saveConfig(options) {
         catch (e) {
             configuration = {};
         }
-        // overwrite with new values
-        Object.keys(options).forEach(key => (configuration[key] = options[key]));
-        // save config
-        fileSystem.write(configPath, configuration);
+        Object.keys(options).forEach(key => {
+            configuration[key] = options[key];
+            mergedConfiguration[key] = options[key];
+        });
+        yield fileSystem.writeJson(configPath, configuration);
+        configToConsole(mergedConfiguration);
     });
 }
 exports.saveConfig = saveConfig;
-//# sourceMappingURL=saveConfig.js.map
+function displayConfig() {
+    configToConsole(mergedConfiguration);
+}
+exports.displayConfig = displayConfig;
+function configToConsole(configuration) {
+    console.log("\nCurrent global maceta configuration");
+    Object.keys(configuration)
+        .filter(key => key !== "resourceMap")
+        .forEach(key => console.log(`${key}: ${configuration[key]}`));
+    console.log();
+    process.exit();
+}

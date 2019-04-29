@@ -66,4 +66,3 @@ else if (command.charAt(0) === "r") {
         handleResources_1.displayResources();
     }
 }
-//# sourceMappingURL=main.js.map

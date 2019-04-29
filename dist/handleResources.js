@@ -55,7 +55,6 @@ function requestPath() {
 }
 function saveConfig(namespace, dir) {
     return __awaiter(this, void 0, void 0, function* () {
-        // load current config
         const configPath = path.join(__dirname, "..", "config", "local.json");
         let configuration;
         try {
@@ -68,7 +67,6 @@ function saveConfig(namespace, dir) {
             configuration.resourceMap = {};
             mergedConfiguration.resourceMap = {};
         }
-        // overwrite with new values
         if (dir == undefined) {
             if (namespace in configuration.resourceMap) {
                 consoleOutput_1.logWarning(`Mapping for namespace ${namespace} deleted`);
@@ -80,7 +78,6 @@ function saveConfig(namespace, dir) {
             configuration.resourceMap[namespace] = dir;
             mergedConfiguration.resourceMap[namespace] = dir;
         }
-        // save config
         yield fileSystem.writeJson(configPath, configuration);
         configToConsole(mergedConfiguration);
     });
@@ -101,4 +98,3 @@ function configToConsole(configuration) {
     consoleOutput_1.logNewline();
     process.exit();
 }
-//# sourceMappingURL=handleResources.js.map

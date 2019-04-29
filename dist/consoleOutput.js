@@ -26,4 +26,3 @@ function logError(text) {
     process.exit();
 }
 exports.logError = logError;
-//# sourceMappingURL=consoleOutput.js.map
