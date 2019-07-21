@@ -1,5 +1,5 @@
 import * as fileSystem from "fs-extra";
-//const open = require("open");
+const open = require("open");
 import * as directoryTree from "directory-tree";
 import * as PromptRadio from "prompt-radio";
 //const ConfirmPrompt = require("prompt-confirm");
@@ -38,6 +38,7 @@ export async function startServer(cliOptions) {
     logSuccess(`${serverConfiguration.hostname}:${serverConfiguration.port}`);
     logSuccess("Server started");
 
+    let url = serverConfiguration.browserUrl;
     /*
     if ("shell" in macetaConfiguration) {
       logSuccess(`Shell embedded mode started: ${url}\n`);
@@ -45,8 +46,8 @@ export async function startServer(cliOptions) {
       url = `${url}index.html`;
       logSuccess(`Server running at: ${url}\n`);
     }
-    opn(url);
     */
+    open(url);
   } catch (e) {
     logError(e);
   }
@@ -85,7 +86,7 @@ async function getConfiguration(
   }
 
   if (projectConfig.ui5LibraryPath == undefined) {
-    logError("No UI5 library path is configured!");
+    logError("The UI5 library path is not configured!");
   }
 
   let shellId = null;
@@ -96,8 +97,8 @@ async function getConfiguration(
   } else {
     indexHtmlPath = await getIndexHtmlPath(basePath);
     if (indexHtmlPath === null) {
-      logWarning("No index.html found");
-      logSuccess("Using default shell configuration");
+      logWarning("index.html not found");
+      logSuccess("Default shell configuration will be used");
       projectConfig.shellEmbedded = true;
     } else {
       projectConfig.basePath = indexHtmlPath;
@@ -212,10 +213,10 @@ async function getConfiguration(
 
   function getMacetaDirectoryChoice(directories) {
     if (directories.length === 0) {
-      logWarning("No maceta.config.json found");
+      logWarning("maceta.config.json not found");
       return null;
     } else if (directories.length === 1) {
-      logSuccess(`Using maceta.config.json from ${directories[0]}`);
+      logSuccess(`maceta.config.json from ${directories[0]} will be used`);
       return directories[0];
     } else {
       logNewline();
@@ -253,7 +254,7 @@ async function getConfiguration(
         }
       }
     } else {
-      logError("shell configuration contains no 'default' key!");
+      logError("'default' key is not present in the shell configuration!");
     }
   }
 

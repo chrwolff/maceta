@@ -24,6 +24,7 @@ var Exceptions;
     Exceptions["LIBRARY_WRONG"] = "UI5 library path not configured correctly";
     Exceptions["IS_SEALED"] = "Configuration cannot be changed after first get";
     Exceptions["MANIFEST_NO_ID"] = "Manifest contains no id";
+    Exceptions["NOT_CHECKED_YET"] = "Configuration is not checked and sealed yet";
 })(Exceptions = exports.Exceptions || (exports.Exceptions = {}));
 let ServerConfiguration = class ServerConfiguration {
     constructor() {
@@ -71,6 +72,23 @@ let ServerConfiguration = class ServerConfiguration {
     get oDataPath() {
         this.checkAndSeal();
         return this.configuration.oDataPath;
+    }
+    get browserUrl() {
+        if (!this.isChecked) {
+            throw new Error(Exceptions.NOT_CHECKED_YET);
+        }
+        let url = `http://${this.configuration.hostname}:${this.configuration.port}/`;
+        if (this.configuration.shellEmbedded) {
+            url = `${url}shell?sap-ushell-config=standalone&local-ushell-config=${this.configuration.shellId}`;
+            if (this.configuration.language) {
+                url = `${url}&sap-language=${this.configuration.language}`;
+            }
+            url = `${url}#Shell-runStandaloneApp`;
+        }
+        else {
+            url = `${url}/index.html`;
+        }
+        return url;
     }
     setOptions(options, resources) {
         if (this.isChecked) {

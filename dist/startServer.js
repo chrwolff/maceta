@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fileSystem = require("fs-extra");
+const open = require("open");
 const directoryTree = require("directory-tree");
 const PromptRadio = require("prompt-radio");
 const ReadlineUi = require("readline-ui");
@@ -29,6 +30,8 @@ function startServer(cliOptions) {
             yield server.listenAsync(serverConfiguration.port, serverConfiguration.hostname);
             consoleOutput_1.logSuccess(`${serverConfiguration.hostname}:${serverConfiguration.port}`);
             consoleOutput_1.logSuccess("Server started");
+            let url = serverConfiguration.browserUrl;
+            open(url);
         }
         catch (e) {
             consoleOutput_1.logError(e);
@@ -58,7 +61,7 @@ function getConfiguration(cliOptions) {
             projectConfig.ui5LibraryPath = getAbolutePath(basePath, macetaConfiguration.ui5LibraryPath);
         }
         if (projectConfig.ui5LibraryPath == undefined) {
-            consoleOutput_1.logError("No UI5 library path is configured!");
+            consoleOutput_1.logError("The UI5 library path is not configured!");
         }
         let shellId = null;
         let indexHtmlPath;
@@ -69,8 +72,8 @@ function getConfiguration(cliOptions) {
         else {
             indexHtmlPath = yield getIndexHtmlPath(basePath);
             if (indexHtmlPath === null) {
-                consoleOutput_1.logWarning("No index.html found");
-                consoleOutput_1.logSuccess("Using default shell configuration");
+                consoleOutput_1.logWarning("index.html not found");
+                consoleOutput_1.logSuccess("Default shell configuration will be used");
                 projectConfig.shellEmbedded = true;
             }
             else {
@@ -156,11 +159,11 @@ function getConfiguration(cliOptions) {
         }
         function getMacetaDirectoryChoice(directories) {
             if (directories.length === 0) {
-                consoleOutput_1.logWarning("No maceta.config.json found");
+                consoleOutput_1.logWarning("maceta.config.json not found");
                 return null;
             }
             else if (directories.length === 1) {
-                consoleOutput_1.logSuccess(`Using maceta.config.json from ${directories[0]}`);
+                consoleOutput_1.logSuccess(`maceta.config.json from ${directories[0]} will be used`);
                 return directories[0];
             }
             else {
@@ -199,7 +202,7 @@ function getConfiguration(cliOptions) {
                     }
                 }
                 else {
-                    consoleOutput_1.logError("shell configuration contains no 'default' key!");
+                    consoleOutput_1.logError("'default' key is not present in the shell configuration!");
                 }
             });
         }

@@ -14,7 +14,8 @@ export enum Exceptions {
   HOSTNAME_WRONG = "Hostname not configured correctly",
   LIBRARY_WRONG = "UI5 library path not configured correctly",
   IS_SEALED = "Configuration cannot be changed after first get",
-  MANIFEST_NO_ID = "Manifest contains no id"
+  MANIFEST_NO_ID = "Manifest contains no id",
+  NOT_CHECKED_YET = "Configuration is not checked and sealed yet"
 }
 
 export interface ConfigurationOptions {
@@ -118,6 +119,24 @@ export class ServerConfiguration {
   get oDataPath(): string {
     this.checkAndSeal();
     return this.configuration.oDataPath;
+  }
+
+  get browserUrl(): String {
+    if (!this.isChecked) {
+      throw new Error(Exceptions.NOT_CHECKED_YET);
+    }
+
+    let url = `http://${this.configuration.hostname}:${this.configuration.port}/`;
+    if (this.configuration.shellEmbedded) {
+      url = `${url}shell?sap-ushell-config=standalone&local-ushell-config=${this.configuration.shellId}`;
+      if (this.configuration.language) {
+        url = `${url}&sap-language=${this.configuration.language}`;
+      }
+      url = `${url}#Shell-runStandaloneApp`;
+    } else {
+      url = `${url}/index.html`;
+    }
+    return url;
   }
 
   public setOptions(

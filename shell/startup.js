@@ -3,9 +3,6 @@
   window["sap.ushell.bootstrap.callback"] = function() {
     // this hook is called when the fiori2 renderer is instantiated (Shell.controller.js -> _resolveHashFragment)
     window["sap-ushell-async-libs-promise-directstart"] = new Promise(main);
-
-    // setup fiori2 renderer
-    sap.ushell.Container.createRenderer("fiori2").placeAt("canvas");
   };
 
   function main(resolve, reject) {
@@ -64,8 +61,6 @@
       let languageCodes = getLanguageCodes(appConfig);
       let currentLanguage = urlParams.get("sap-language") || languageCodes[0];
       currentLanguage = currentLanguage.toLowerCase();
-      createLanguageMenu(languageCodes, currentLanguage);
-      setLanguage(currentLanguage, false);
 
       // resource path for the component is mapped to a file by default
       resourcePath[appConfig.ui5ComponentName] = resourcePath[
@@ -103,14 +98,45 @@
 
       sap.ui.getCore().applyTheme("sap_belize_plus");
 
-      // create the component and resolve the promise
-      sap.ushell.Container.getService("Ui5ComponentLoader")
-        .createComponent(appConfig)
-        .done(function(configWithComponentHandle) {
-          resolve({
-            resolvedHashFragment: configWithComponentHandle
-          });
-        });
+      function startRendering() {
+        if (sap.ushell.Container) {
+          sap.ushell.Container.createRenderer("fiori2").placeAt("canvas");
+          startApp();
+          return;
+        }
+        jQuery.sap.delayedCall(100, self, startRendering);
+      }
+
+      function startApp() {
+        // create the component and resolve the promise
+        let ui5ComponentLoader = sap.ushell.Container.getService(
+          "Ui5ComponentLoader"
+        );
+        if (ui5ComponentLoader) {
+          ui5ComponentLoader
+            .createComponent(appConfig)
+            .done(function(configWithComponentHandle) {
+              resolve({
+                resolvedHashFragment: configWithComponentHandle
+              });
+            });
+          doTasksAfterApplicationStart();
+          return;
+        }
+        jQuery.sap.delayedCall(100, self, startApp);
+      }
+
+      function doTasksAfterApplicationStart() {
+        let lifeCycleService = sap.ushell.Container.getService("AppLifeCycle");
+        if (typeof lifeCycleService.getCurrentApplication() !== "undefined") {
+          createLanguageMenu(languageCodes, currentLanguage);
+          setLanguage(currentLanguage, false);
+          return;
+        }
+        jQuery.sap.delayedCall(100, self, doTasksAfterApplicationStart);
+      }
+
+      startRendering();
     }
   }
 
@@ -142,7 +168,6 @@
   // the necessary functionality
   function createLanguageMenu(languageCodes, currentLanguage) {
     let shellRenderer = sap.ushell.Container.getRenderer();
-    let lifeCycleService = sap.ushell.Container.getService("AppLifeCycle");
     if (typeof shellRenderer.addActionButton === "function") {
       addLanguageMenuToShell();
     }
@@ -173,11 +198,6 @@
 
     // add the button to shell menu, once the application is available
     function addLanguageMenuToShell() {
-      if (typeof lifeCycleService.getCurrentApplication() === "undefined") {
-        jQuery.sap.delayedCall(100, self, addLanguageMenuToShell);
-        return;
-      }
-
       shellRenderer.addHeaderItem(
         {
           id: "languageMenuButton",

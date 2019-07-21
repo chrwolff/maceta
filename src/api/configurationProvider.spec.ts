@@ -21,7 +21,7 @@ describe("ServerConfiguration", () => {
     options = {
       ui5LibraryPath: ".",
       basePath: process.cwd(),
-      componentPath: ".",
+      componentPath: "./testApp/app/",
       port: 3000,
       hostname: "localhost",
       shellEmbedded: false,

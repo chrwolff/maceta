@@ -6,7 +6,8 @@ export declare enum Exceptions {
     HOSTNAME_WRONG = "Hostname not configured correctly",
     LIBRARY_WRONG = "UI5 library path not configured correctly",
     IS_SEALED = "Configuration cannot be changed after first get",
-    MANIFEST_NO_ID = "Manifest contains no id"
+    MANIFEST_NO_ID = "Manifest contains no id",
+    NOT_CHECKED_YET = "Configuration is not checked and sealed yet"
 }
 export interface ConfigurationOptions {
     ui5LibraryPath: string;
@@ -54,6 +55,7 @@ export declare class ServerConfiguration {
     readonly shellConfiguration: ShellConfiguration;
     readonly resourceMap: ResourceMap;
     readonly oDataPath: string;
+    readonly browserUrl: String;
     setOptions(options: ConfigurationOptions, resources?: Resource[]): void;
     checkAndSeal(): void;
     private createResourcePath;
