@@ -1782,8 +1782,8 @@ set-getter@^0.1.0:
     to-object-path "^0.3.0"
 
 set-value@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/set-value/-/set-value-3.0.0.tgz#bc021514f46effed8176fd5f0f67e9988531141f"
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/set-value/-/set-value-3.0.1.tgz#52c82af7653ba69eb1db92e81f5cdb32739b9e95"
   dependencies:
     is-plain-object "^2.0.4"
 
